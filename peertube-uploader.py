@@ -1,11 +1,11 @@
 #!/usr/bin/env python
-from __future__ import print_function
 import os
 import sys
 import requests
 import logging
 from config import LOG_FILE_PATH, PEERTUBE_CHANNEL, PEERTUBE_CLIENT_ID, \
-        PEERTUBE_CLIENT_SECRET, PEERTUBE_TOKEN, PEERTUBE_ENDPOINT, JIBRI_RECORDS_PATH
+        PEERTUBE_CLIENT_SECRET, PEERTUBE_TOKEN, PEERTUBE_ENDPOINT, \
+        PEERTUBE_USER, PEERTUBE_PASSWORD, JIBRI_RECORDS_PATH
 from mimetypes import guess_type
 
 
@@ -17,24 +17,38 @@ logging.basicConfig(
 
 videodir = sys.argv[1]
 
+auth_data = {'client_id': PEERTUBE_CLIENT_ID,
+             'client_secret': PEERTUBE_CLIENT_SECRET,
+             'grant_type': 'password',
+             'response_type': 'code',
+             'username': PEERTUBE_USER,
+             'password': PEERTUBE_PASSWORD
+             }
+
+if PEERTUBE_TOKEN is 'access_token':
+    try:
+        auth_result = requests.post(
+            '{0}{1}'.format(PEERTUBE_ENDPOINT, '/api/v1/users/token'),
+            data=auth_data
+        )
+        access_token = (auth_result.json()['access_token'])
+        logging.info('{0} {1}'.format("Got new token:", access_token))
+    except:
+        logging.error(auth_result.text)
+        sys.exit(1)
+else:
+    access_token = PEERTUBE_TOKEN
+
 for videofile in os.listdir(videodir):
     if videofile.endswith(".mp4"):
         file_path = os.path.join(videodir, videofile)
         file_name = os.path.basename(file_path)
         file_mime_type = guess_type(file_path)[0]
-        logging.info( '{0}{1}'.format(u'Accept file for uploading: ', file_name) )
+        logging.info('{0}{1}'.format(u'Accept file for uploading: ', file_name))
 
         channelId = requests.get(
             '{0}{1}/{2}'.format(PEERTUBE_ENDPOINT,'/api/v1/video-channels', PEERTUBE_CHANNEL)
             ).json()['id']
-
-        auth_data = {'client_id': PEERTUBE_CLIENT_ID,
-                     'client_secret': PEERTUBE_CLIENT_SECRET,
-                     'grant_type': 'password',
-                     'response_type': 'code',
-                     'username': None,
-                     'password': None
-                     }
 
         upload_data = {'channelId': channelId,
                        'privacy': '2',
