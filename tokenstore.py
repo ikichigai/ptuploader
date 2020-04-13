@@ -55,11 +55,11 @@ def get_token_from_pt():
                 data=auth_data
                 )
             access_token = (auth_result.json()['access_token'])
-            seconds = (auth_result.json()['expires_in'])
-            set_token(access_token, seconds)
-            logging.info('Got new token from peertube: %s' % access_token)
+            expires_in = (auth_result.json()['expires_in'])
+            set_token(access_token, expires_in)
+            logging.info("Got new token from peertube: %s" % access_token)
         except:
-            logging.error(auth_result.text)
+            logging.error("Auth result: %s" % auth_result.text)
             sys.exit(1)
     else:
         access_token = c.PEERTUBE_TOKEN

@@ -23,7 +23,7 @@ for videofile in os.listdir(videodir):
         file_path = os.path.join(videodir, videofile)
         file_name = os.path.basename(file_path)
         file_mime_type = guess_type(file_path)[0]
-        logging.info("Accept file for uploading: " % file_name)
+        logging.info("Accept file for uploading: %s" % file_name)
 
         channelId = requests.get(
             '{0}{1}/{2}'.format(c.PEERTUBE_ENDPOINT, '/api/v1/video-channels', c.PEERTUBE_CHANNEL)
@@ -49,5 +49,5 @@ for videofile in os.listdir(videodir):
                 video_uuid = upload_result.json()['video']['uuid']
                 logging.info("%s%s/%s" % (c.PEERTUBE_ENDPOINT, '/videos/watch', video_uuid))
             except:
-                logging.info(upload_result.text)
+                logging.info("Upload result: %s" % upload_result.text)
                 sys.exit(1)
