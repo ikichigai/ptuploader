@@ -1,18 +1,20 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
 import os
 import sys
-import requests
 import logging
+from mimetypes import guess_type
+import requests
 from config import LOG_FILE_PATH, PEERTUBE_CHANNEL, PEERTUBE_CLIENT_ID, \
         PEERTUBE_CLIENT_SECRET, PEERTUBE_TOKEN, PEERTUBE_ENDPOINT, \
-        PEERTUBE_USER, PEERTUBE_PASSWORD, JIBRI_RECORDS_PATH
-from mimetypes import guess_type
+        PEERTUBE_USER, PEERTUBE_PASSWORD
 
 
 logging.basicConfig(
-        filename = LOG_FILE_PATH,
-        format = u'%(filename)s[LINE:%(lineno)d]# %(levelname)-8s [%(asctime)s]  %(message)s',
-        level = logging.INFO
+        filename=LOG_FILE_PATH,
+        format=u'%(filename)s[LINE:%(lineno)d]# %(levelname)-8s [%(asctime)s]  %(message)s',
+        level=logging.INFO
         )
 
 videodir = sys.argv[1]
@@ -25,7 +27,7 @@ auth_data = {'client_id': PEERTUBE_CLIENT_ID,
              'password': PEERTUBE_PASSWORD
              }
 
-if PEERTUBE_TOKEN is 'access_token':
+if PEERTUBE_TOKEN == 'access_token':
     try:
         auth_result = requests.post(
             '{0}{1}'.format(PEERTUBE_ENDPOINT, '/api/v1/users/token'),
@@ -47,7 +49,7 @@ for videofile in os.listdir(videodir):
         logging.info('{0}{1}'.format(u'Accept file for uploading: ', file_name))
 
         channelId = requests.get(
-            '{0}{1}/{2}'.format(PEERTUBE_ENDPOINT,'/api/v1/video-channels', PEERTUBE_CHANNEL)
+            '{0}{1}/{2}'.format(PEERTUBE_ENDPOINT, '/api/v1/video-channels', PEERTUBE_CHANNEL)
             ).json()['id']
 
         upload_data = {'channelId': channelId,
