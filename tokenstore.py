@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/python3
 # -*- coding: utf-8 -*-
 
 
@@ -15,6 +15,7 @@ def get_redis():
         host=c.REDIS_HOST,
         port=c.REDIS_PORT,
         db=1,
+        decode_responses=True,
         password=c.REDIS_PASSWORD
     )
     return r
@@ -23,20 +24,25 @@ def get_redis():
 def get_token():
     r = get_redis()
     if r.ttl("pttoken") > 1000:
-        token = r.get("pttoken")
-        logging.info('Got token locally: %s' % token)
+        token = str(r.get("pttoken"))
+        logging.info("Got token locally: %s" % token)
     else:
         token = get_token_from_pt()
     return token
 
 
-def set_token(token, seconds=10000):
+def set_token(token):
     r = get_redis()
-    r.setex(
-        "pttoken",
-        timedelta(seconds=seconds),
-        value=token
-    )
+    r.delete("pttoken")
+    try:
+        r.setex(
+            "pttoken",
+            timedelta(seconds=80000),
+            # not works with python2
+            "{0}".format(token)
+        )
+    except Exception as e:
+        logging.error("Cannot pass token to uploader: %s", e.message)
 
 
 def get_token_from_pt():
@@ -54,15 +60,14 @@ def get_token_from_pt():
                 '{0}{1}'.format(c.PEERTUBE_ENDPOINT, '/api/v1/users/token'),
                 data=auth_data
                 )
-            access_token = (auth_result.json()['access_token'])
-            expires_in = (auth_result.json()['expires_in'])
-            set_token(access_token, expires_in)
+            access_token = auth_result.json()['access_token']
             logging.info("Got new token from peertube: %s" % access_token)
-        except:
-            logging.error("Auth result: %s" % auth_result.text)
+        except Exception as e:
+            logging.error("Error: %s, Auth result: %s" % (e.message, auth_result.text))
             sys.exit(1)
     else:
         access_token = c.PEERTUBE_TOKEN
 
-    set_token(access_token)
+    print(access_token)
+    set_token(str(access_token))
     return access_token
