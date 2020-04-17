@@ -23,9 +23,10 @@ def get_redis():
 
 def get_token():
     r = get_redis()
-    if r.ttl("pttoken") > 1000:
-        token = str(r.get("pttoken"))
-        logging.info("Got token locally: %s" % token)
+    if r.get("pttoken"):
+        if r.ttl("pttoken") > 1000:
+            token = str(r.get("pttoken"))
+            logging.info("Got token locally: %s" % token)
     else:
         token = get_token_from_pt()
     return token
